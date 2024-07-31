@@ -22,8 +22,6 @@ class App(ctk.CTk):
 
         self.current_version = "1.0.0"  # Set your current version here
 
-        self.check_for_updates()
-
         instructions_text = (
             "Enter Section IDs and UserIDs below.\n\n"
             "Once you click Submit, a window will appear and you will have to log in to Pearson Online Classroom and complete the 2FA authentication.\n\n"
@@ -56,33 +54,6 @@ class App(ctk.CTk):
 
         self.submit_button = ctk.CTkButton(self.button_frame, text="Submit", command=self.submit)
         self.submit_button.grid(row=0, column=4, padx=5, sticky="e")
-
-    def check_for_updates(self):
-        try:
-            response = requests.get("https://api.github.com/repos/andrewleggett/POC-Sectioner-Py/releases/latest")
-            latest_release = response.json()
-            latest_version = latest_release["tag_name"]
-
-            if self.compare_versions(latest_version, self.current_version) > 0:
-                self.show_update_notification(latest_version, latest_release["html_url"])
-        except Exception as e:
-            print(f"Failed to check for updates: {e}")
-
-    def compare_versions(self, version1, version2):
-        v1 = list(map(int, version1.split(".")))
-        v2 = list(map(int, version2.split(".")))
-        return (v1 > v2) - (v1 < v2)
-
-    def show_update_notification(self, latest_version, update_url):
-        self.update_label = ctk.CTkLabel(self, text=f"A new version ({latest_version}) is available!", text_color="green")
-        self.update_label.pack(pady=5)
-
-        self.update_button = ctk.CTkButton(self, text="Update Now", command=lambda: self.launch_updater(update_url))
-        self.update_button.pack(pady=5)
-
-    def launch_updater(self, update_url):
-        self.destroy()
-        os.system("Updater.exe")
 
     def add_input_pair(self):
         pair_frame = ctk.CTkFrame(self.frame)
@@ -226,3 +197,5 @@ class App(ctk.CTk):
 if __name__ == "__main__":
     app = App()
     app.mainloop()
+
+#pyinstaller --onefile --icon=icons/icon128.ico --name=POC Sectioner poc_sectioner.py
