@@ -2,7 +2,7 @@
 
 
 a = Analysis(
-    ['Updater.py'],
+    ['updater.py'],
     pathex=[],
     binaries=[],
     datas=[],
