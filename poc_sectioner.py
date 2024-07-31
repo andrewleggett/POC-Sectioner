@@ -2,9 +2,12 @@ import customtkinter as ctk
 import tkinter as tk
 import requests
 from selenium import webdriver
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
+import time
 
 class App(ctk.CTk):
     def __init__(self):
@@ -99,14 +102,25 @@ class App(ctk.CTk):
             pair_frame[0].master.destroy()
 
     def submit(self):
+        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+
+        # Navigate to the login page and perform login and 2FA authentication
+        login_url = "https://www.connexus.com/"  # Replace with the actual login URL
+        driver.get(login_url)
+
+        # Wait until there is a class portalletTitle on the page with the text "Curriculum Management"
+        WebDriverWait(driver, 300).until(EC.presence_of_element_located((By.CLASS_NAME, 'portalletTitle')))
+
         for section_id_entry, user_ids_entry in self.input_pairs:
             section_id = section_id_entry.get()
             user_ids = user_ids_entry.get("1.0", "end-1c")
 
             if self.validate_section_id(section_id) and self.validate_user_ids(user_ids):
-                self.process_section(section_id, user_ids)
+                self.process_section(driver, section_id, user_ids)
             else:
                 print(f"Invalid input for Section ID: {section_id} or User IDs: {user_ids}")
+
+        driver.quit()
 
     def validate_section_id(self, section_id):
         return section_id.isdigit() and len(section_id) > 4
@@ -115,15 +129,74 @@ class App(ctk.CTk):
         user_ids_list = user_ids.replace("\n", ",").split(",")
         return all(user_id.isdigit() for user_id in user_ids_list)
 
-    def process_section(self, section_id, user_ids):
-        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+    def process_section(self, driver, section_id, user_ids):
         url = f"https://www.connexus.com/lmu/sections/webusers.aspx?idSection={section_id}"
         driver.get(url)
 
-        # Add your Selenium automation code here
-        # For example, you might want to interact with the webpage using driver.find_element(By.ID, "element_id")
+        # Wait until the input element with ID 'users_search' is present
+        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, 'users_search')))
 
-        driver.quit()
+        # Insert the UserIDs into the input element
+        user_ids_input = driver.find_element(By.ID, 'users_search')
+        user_ids_input.clear()
+        user_ids_input.send_keys(user_ids.replace("\n", ","))
+
+        # Check for Variation 1
+        try:
+            all_users_radio = driver.find_element(By.ID, 'users_allUsersAtLocation')
+            if not all_users_radio.is_selected():
+                all_users_radio.click()
+
+            members_only_checkbox = driver.find_element(By.ID, 'users_membersOnly')
+            if members_only_checkbox.is_selected():
+                members_only_checkbox.click()
+        except:
+            # Variation 2
+            section_filter_radio = driver.find_element(By.ID, 'users_sectionFilter_2')
+            if not section_filter_radio.is_selected():
+                section_filter_radio.click()
+
+        # Click the search button
+        search_button = driver.find_element(By.ID, 'users_searchButton')
+        search_button.click()
+
+        # Wait until the page has finished loading
+        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, 'users_search')))
+
+        # Get the number of users in the section
+        num_users_text = driver.find_element(By.ID, 'users_grid_ctl01_lblNumRecords').text
+        total_users = int(num_users_text.split('(')[1].split(' ')[0])
+
+        # Process users in pages
+        page_number = 1
+        while True:
+            # Set the selected index of all select elements on the page that contain a value that is exactly "Student"
+            select_elements = driver.find_elements(By.XPATH, "//select[option[text()='Student']]")
+            for select_element in select_elements:
+                select = Select(select_element)
+                select.select_by_visible_text('Student')
+
+            # Click the save button
+            save_button = driver.find_element(By.ID, 'saveButton')
+            save_button.click()
+
+            # Wait until the page has finished loading
+            WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, 'users_search')))
+
+            # Check if we need to go to the next page
+            if total_users <= 200:
+                break
+
+            # Find the next page link
+            next_page_link = driver.find_element(By.XPATH, f"//td[@id='users_grid_ctl01_pagerHeaderCell']//a[text()='{page_number + 1}']")
+            next_page_link.click()
+
+            # Wait until the page has finished loading
+            WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, 'users_search')))
+
+            page_number += 1
+            if page_number * 200 >= total_users:
+                break
 
 if __name__ == "__main__":
     app = App()
