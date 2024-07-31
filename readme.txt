@@ -7,9 +7,19 @@ The source code and updates can be found here: https://github.com/andrewleggett/
 
 
 To install: 
+(if you want a shortcuts and an uninstall option)
 1) Download the installer from https://github.com/andrewleggett/POC-Sectioner-Py/releases
 2) Run the installer to install the program.
 3) Run the program.
+(if you want the simple method)
+1) Download the exe from https://github.com/andrewleggett/POC-Sectioner-Py/releases
+2) Run the program.
+
+NB: Windows will almost certainly give you a warning when you try to run the program.
+This is happening because I haven't bought a software signing certificate from a certificate authority. It's ~$200/yr.
+To solve:
+1) Click "More info"
+2) Click "Run Anyway"
 
 To use:
 1) Get the Section ID of the section you want to enroll students in.
