@@ -1,3 +1,4 @@
+import ctypes
 import customtkinter as ctk
 import tkinter as tk
 import requests
@@ -16,6 +17,9 @@ from selenium.webdriver.support.ui import Select
 class App(ctk.CTk):
     def __init__(self):
         super().__init__()
+
+        # Hide the console window
+        ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(), 0)
 
         self.title("POC Sectioner")
         self.geometry("600x700")
