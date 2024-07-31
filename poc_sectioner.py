@@ -20,7 +20,7 @@ class App(ctk.CTk):
         self.title("POC Sectioner")
         self.geometry("600x600")
 
-        self.current_version = "1.0.0"  # Set your current version here
+        self.current_version = "1.0.1"  # Set your current version here
 
         instructions_text = (
             "Enter Section IDs and UserIDs below.\n\n"
