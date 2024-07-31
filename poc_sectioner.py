@@ -1,4 +1,3 @@
-from tkinter.tix import Select
 import customtkinter as ctk
 import tkinter as tk
 import requests
@@ -11,6 +10,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 import time
 import os
 import sys
+from selenium.common.exceptions import TimeoutException
 
 class App(ctk.CTk):
     def __init__(self):
@@ -19,7 +19,7 @@ class App(ctk.CTk):
         self.title("POC Sectioner")
         self.geometry("600x600")
 
-        self.current_version = "1.0.0"  # Set the current version here
+        self.current_version = "1.0.0"  # Set your current version here
 
         self.check_for_updates()
 
@@ -41,17 +41,20 @@ class App(ctk.CTk):
         self.button_frame = ctk.CTkFrame(self)
         self.button_frame.pack(pady=10, padx=10, fill="x")
 
+        self.add_remove_label = ctk.CTkLabel(self.button_frame, text="Add or remove additional sections:")
+        self.add_remove_label.grid(row=0, column=0, padx=5, sticky="w")
+
         self.add_button = ctk.CTkButton(self.button_frame, text="+", command=self.add_input_pair, width=30, height=30)
-        self.add_button.grid(row=0, column=0, padx=5)
+        self.add_button.grid(row=0, column=1, padx=5)
 
         self.remove_button = ctk.CTkButton(self.button_frame, text="-", command=self.remove_input_pair, width=30, height=30)
-        self.remove_button.grid(row=0, column=1, padx=5)
+        self.remove_button.grid(row=0, column=2, padx=5)
 
         # Adding empty columns to create space
-        self.button_frame.grid_columnconfigure(2, weight=1)
+        self.button_frame.grid_columnconfigure(3, weight=1)
 
         self.submit_button = ctk.CTkButton(self.button_frame, text="Submit", command=self.submit)
-        self.submit_button.grid(row=0, column=3, padx=5, sticky="e")
+        self.submit_button.grid(row=0, column=4, padx=5, sticky="e")
 
     def check_for_updates(self):
         try:
@@ -112,32 +115,31 @@ class App(ctk.CTk):
         driver.get(login_url)
 
         # Wait until there is a class portalletTitle on the page with the text "Curriculum Management"
-        WebDriverWait(driver, 300).until(EC.presence_of_element_located((By.CLASS_NAME, 'portalletTitle')))
+        try:
+            WebDriverWait(driver, 900).until(EC.presence_of_element_located((By.CLASS_NAME, 'portalletTitle')))
+        except TimeoutException:
+            print("Timeout occurred. Returning to login URL.")
+            driver.get(login_url)
+            return
 
         for section_id_entry, user_ids_entry in self.input_pairs:
             section_id = section_id_entry.get()
             user_ids = user_ids_entry.get("1.0", "end-1c")
-
-            if self.validate_section_id(section_id) and self.validate_user_ids(user_ids):
-                self.process_section(driver, section_id, user_ids)
-            else:
-                print(f"Invalid input for Section ID: {section_id} or User IDs: {user_ids}")
+            self.process_section(driver, section_id, user_ids)
 
         driver.quit()
-
-    def validate_section_id(self, section_id):
-        return section_id.isdigit() and len(section_id) > 4
-
-    def validate_user_ids(self, user_ids):
-        user_ids_list = user_ids.replace("\n", ",").split(",")
-        return all(user_id.isdigit() for user_id in user_ids_list)
 
     def process_section(self, driver, section_id, user_ids):
         url = f"https://www.connexus.com/lmu/sections/webusers.aspx?idSection={section_id}"
         driver.get(url)
 
         # Wait until the input element with ID 'users_search' is present
-        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, 'users_search')))
+        try:
+            WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, 'users_search')))
+        except TimeoutException:
+            print("Timeout occurred. Returning to login URL.")
+            driver.get("https://www.connexus.com/")
+            return
 
         # Insert the UserIDs into the input element
         user_ids_input = driver.find_element(By.ID, 'users_search')
@@ -164,7 +166,12 @@ class App(ctk.CTk):
         search_button.click()
 
         # Wait until the page has finished loading
-        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, 'users_search')))
+        try:
+            WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, 'users_search')))
+        except TimeoutException:
+            print("Timeout occurred. Returning to login URL.")
+            driver.get("https://www.connexus.com/")
+            return
 
         # Get the number of users in the section
         num_users_text = driver.find_element(By.ID, 'users_grid_ctl01_lblNumRecords').text
@@ -184,7 +191,12 @@ class App(ctk.CTk):
             save_button.click()
 
             # Wait until the page has finished loading
-            WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, 'users_search')))
+            try:
+                WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, 'users_search')))
+            except TimeoutException:
+                print("Timeout occurred. Returning to login URL.")
+                driver.get("https://www.connexus.com/")
+                return
 
             # Check if we need to go to the next page
             if total_users <= 200:
@@ -195,7 +207,12 @@ class App(ctk.CTk):
             next_page_link.click()
 
             # Wait until the page has finished loading
-            WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, 'users_search')))
+            try:
+                WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, 'users_search')))
+            except TimeoutException:
+                print("Timeout occurred. Returning to login URL.")
+                driver.get("https://www.connexus.com/")
+                return
 
             page_number += 1
             if page_number * 200 >= total_users:
