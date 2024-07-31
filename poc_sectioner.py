@@ -25,7 +25,10 @@ class App(ctk.CTk):
         instructions_text = (
             "Enter Section IDs and UserIDs below.\n\n"
             "Once you click Submit, a window will appear and you will have to log in to Pearson Online Classroom and complete the 2FA authentication.\n\n"
-            "NB: This tool will not work if you do not have sectioning rights on your POC account."
+            "NB: This tool will not work if you do not have sectioning rights on your POC account.\n\n"
+            "If you encounter any bugs or issues, please contact Andrew Leggett (andrew.leggett@200r.uk)\n"
+            "There has been a bug reported where sections with more than 400 students don't save the last page of students. If you have a section with more than 400 students, please reach out to me - I need sections to test fixes on!\n"
+            "You can also bypass the issue by entering the section multiple times, and splitting the students between them so that no one entry has more than 400 students."
         )
 
         self.instructions = ctk.CTkLabel(self, text=instructions_text, wraplength=550)
@@ -168,7 +171,7 @@ class App(ctk.CTk):
 
             # Wait until the page has finished loading
             try:
-                WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, 'users_search')))
+                WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.ID, 'users_grid_ctl01_historyImageLink')))
             except TimeoutException:
                 print("Timeout occurred. Returning to login URL.")
                 driver.get("https://www.connexus.com/")
@@ -184,7 +187,7 @@ class App(ctk.CTk):
 
             # Wait until the page has finished loading
             try:
-                WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, 'users_search')))
+                WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.ID, 'users_grid_ctl01_historyImageLink')))
             except TimeoutException:
                 print("Timeout occurred. Returning to login URL.")
                 driver.get("https://www.connexus.com/")
