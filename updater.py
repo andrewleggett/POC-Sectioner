@@ -47,11 +47,11 @@ def main():
         assets = release_info.get("assets", [])
 
         # Find the asset with the name 'POC-Sectioner.exe'
-        poc_sectioner_asset = next((asset for asset in assets if asset["name"] == "POC-Sectioner.exe"), None)
+        poc_sectioner_asset = next((asset for asset in assets if asset["name"] == "POC Sectioner.exe"), None)
 
         if poc_sectioner_asset:
             download_url = poc_sectioner_asset["browser_download_url"]
-            destination_path = os.path.join(os.path.dirname(sys.argv[0]), "POC-Sectioner.exe")
+            destination_path = os.path.join(os.path.dirname(sys.argv[0]), "POC Sectioner.exe")
 
             print(f"Downloading {download_url} to {destination_path}...")
             download_file(download_url, destination_path)
@@ -61,7 +61,7 @@ def main():
             update_version_file(version_file, latest_version)
             print(f"Updated to version {latest_version}.")
         else:
-            print("POC-Sectioner.exe not found in the latest release.")
+            print("POC Sectioner.exe not found in the latest release.")
 
     except Exception as e:
         print(f"Error: {e}")
