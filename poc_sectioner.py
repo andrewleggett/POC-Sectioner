@@ -1,5 +1,6 @@
 import customtkinter as ctk
 import tkinter as tk
+import requests
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
@@ -11,6 +12,10 @@ class App(ctk.CTk):
 
         self.title("POC Sectioner")
         self.geometry("600x600")
+
+        self.current_version = "1.0.0"  # Set your current version here
+
+        self.check_for_updates()
 
         instructions_text = (
             "Enter Section IDs and UserIDs below.\n\n"
@@ -41,6 +46,33 @@ class App(ctk.CTk):
 
         self.submit_button = ctk.CTkButton(self.button_frame, text="Submit", command=self.submit)
         self.submit_button.grid(row=0, column=3, padx=5, sticky="e")
+
+    def check_for_updates(self):
+        try:
+            response = requests.get("https://api.github.com/repos/andrewleggett/POC-Sectioner-Py/releases/latest")
+            latest_release = response.json()
+            latest_version = latest_release["tag_name"]
+
+            if self.compare_versions(latest_version, self.current_version) > 0:
+                self.show_update_notification(latest_version, latest_release["html_url"])
+        except Exception as e:
+            print(f"Failed to check for updates: {e}")
+
+    def compare_versions(self, version1, version2):
+        v1 = list(map(int, version1.split(".")))
+        v2 = list(map(int, version2.split(".")))
+        return (v1 > v2) - (v1 < v2)
+
+    def show_update_notification(self, latest_version, update_url):
+        self.update_label = ctk.CTkLabel(self, text=f"A new version ({latest_version}) is available!", text_color="red")
+        self.update_label.pack(pady=5)
+
+        self.update_button = ctk.CTkButton(self, text="Update", command=lambda: self.open_update_url(update_url))
+        self.update_button.pack(pady=5)
+
+    def open_update_url(self, url):
+        import webbrowser
+        webbrowser.open(url)
 
     def add_input_pair(self):
         pair_frame = ctk.CTkFrame(self.frame)
