@@ -1,3 +1,4 @@
+from tkinter.tix import Select
 import customtkinter as ctk
 import tkinter as tk
 import requests
@@ -8,6 +9,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 import time
+import os
+import sys
 
 class App(ctk.CTk):
     def __init__(self):
@@ -16,7 +19,7 @@ class App(ctk.CTk):
         self.title("POC Sectioner")
         self.geometry("600x600")
 
-        self.current_version = "1.0.0"  # Set your current version here
+        self.current_version = "1.0.0"  # Set the current version here
 
         self.check_for_updates()
 
@@ -67,15 +70,15 @@ class App(ctk.CTk):
         return (v1 > v2) - (v1 < v2)
 
     def show_update_notification(self, latest_version, update_url):
-        self.update_label = ctk.CTkLabel(self, text=f"A new version ({latest_version}) is available!", text_color="red")
+        self.update_label = ctk.CTkLabel(self, text=f"A new version ({latest_version}) is available!", text_color="green")
         self.update_label.pack(pady=5)
 
-        self.update_button = ctk.CTkButton(self, text="Update", command=lambda: self.open_update_url(update_url))
+        self.update_button = ctk.CTkButton(self, text="Update Now", command=lambda: self.launch_updater(update_url))
         self.update_button.pack(pady=5)
 
-    def open_update_url(self, url):
-        import webbrowser
-        webbrowser.open(url)
+    def launch_updater(self, update_url):
+        self.destroy()
+        os.system("Updater.exe")
 
     def add_input_pair(self):
         pair_frame = ctk.CTkFrame(self.frame)
