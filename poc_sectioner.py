@@ -11,6 +11,7 @@ import time
 import os
 import sys
 from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.support.ui import Select
 
 class App(ctk.CTk):
     def __init__(self):
