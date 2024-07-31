@@ -1,5 +1,7 @@
 # Pearson Online Classroom Sectioner
 
+Automatically enrolls students into sections.
+
 The source code and updates can be found here: https://github.com/andrewleggett/POC-Sectioner-Py
 
 
