@@ -125,6 +125,7 @@ class App(ctk.CTk):
         for section_id_entry, user_ids_entry in self.input_pairs:
             section_id = section_id_entry.get()
             user_ids = user_ids_entry.get("1.0", "end-1c")
+
             self.process_section(driver, section_id, user_ids)
 
         driver.quit()
@@ -175,7 +176,10 @@ class App(ctk.CTk):
 
         # Get the number of users in the section
         num_users_text = driver.find_element(By.ID, 'users_grid_ctl01_lblNumRecords').text
-        total_users = int(num_users_text.split('(')[1].split(' ')[0])
+        if '(' in num_users_text:
+            total_users = int(num_users_text.split('(')[1].split(' ')[0])
+        else:
+            total_users = 0  # Assume less than 200 users if no parentheses
 
         # Process users in pages
         page_number = 1
